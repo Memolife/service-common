@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from functools import wraps
 import logging
+from werkzeug.exceptions import HTTPException
 from flask import request, abort, Flask
 import jwt
 
@@ -11,17 +12,27 @@ app = Flask(__name__)
 
 app.config.from_object('config')
 
+
 def set_request_user():
+    # if the user is already set (eg: has_roles or another decorator),
+    # we assume it's authenticated
+    #
     if hasattr(request, 'user'):
         return
+
     token = request.headers.get('authorization', '').split("Bearer ")[-1]
+
     if not token:
         abort(401)
-    payload = jwt.decode(token, key=app.config["CRYPTO_KEY"])
+
+    try:
+        payload = jwt.decode(token, key=app.config["CRYPTO_KEY"])
+    except jwt.DecodeError:
+        abort(401)
+
     if payload:
         request.user = payload
         return
-    abort(401)
 
 
 def is_authenticated(fn):
@@ -42,10 +53,14 @@ def has_roles(roles=[]):
     def decorator(fn):
         @wraps(fn)
         def wrapped(*args, **kwargs):
-            set_request_user()
+            # set_request_user()
+            try:
+                set_request_user()
+            except:
+                raise HTTPException(401)
+
             if set(roles).issubset(request.user.roles):
                 return fn(*args, **kwargs)
             abort(401)
         return wrapped
     return decorator
-

@@ -49,18 +49,15 @@ def is_authenticated(fn):
     return wrapped
 
 
-def has_roles(roles=[]):
+def has_roles(*roles):
     def decorator(fn):
         @wraps(fn)
         def wrapped(*args, **kwargs):
-            # set_request_user()
-            try:
-                set_request_user()
-            except:
-                raise HTTPException(401)
-
-            if set(roles).issubset(request.user.roles):
+            set_request_user()
+            if set(roles).issubset(request.user['roles']):
                 return fn(*args, **kwargs)
             abort(401)
         return wrapped
     return decorator
+
+

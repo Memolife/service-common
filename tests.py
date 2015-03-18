@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from functools import wraps
+import json
 import logging
 import unittest
+from bson import ObjectId
 from flask import Flask, make_response, abort
 import jwt
+from memolife import db
 from memolife.auth import is_authenticated, has_roles
+from mongokit import Connection, Database
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +61,19 @@ class AuthTestCase(unittest.TestCase):
         result = self.app.get("/is-some-role/", headers={'authorization': self.bearer_header})
         self.assertEquals(result.status_code, 401)
 
+
+class DBTestCase(unittest.TestCase):
+    def test_should_json_encode_objectid(self):
+        id = ObjectId()
+        data = json.dumps({'id': id}, cls=db.MongoJsonEncoder)
+        self.assertTrue(data)
+
+    def test_should_get_connection(self):
+        conn = db.get_connection()
+        self.assertIsInstance(conn, Connection)
+
+    def test_should_get_database(self):
+        self.assertIsInstance(db.get_database(), Database)
 
 
 @app.route('/is-authenticated/')

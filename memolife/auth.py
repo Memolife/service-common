@@ -20,7 +20,10 @@ def set_request_user():
     if hasattr(request, 'user'):
         return
 
-    token = request.headers.get('authorization', '').split("Bearer ")[-1]
+    if request.values.has_key('access_token'):
+        token = request.values['access_token']
+    else:
+        token = request.headers.get('authorization', '').split("Bearer ")[-1]
 
     if not token:
         abort(401)

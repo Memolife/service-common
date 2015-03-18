@@ -19,7 +19,7 @@ app.config.from_object('config')
 
 class AuthTestCase(unittest.TestCase):
     def setUp(self):
-        token = create_token({
+        self.token = token = create_token({
             '_id': "testuserid",
             'email': 'test@test.com',
             'roles': ['user', 'admin']
@@ -39,6 +39,11 @@ class AuthTestCase(unittest.TestCase):
     def test_should_not_be_authenticated_without_token(self):
         result = self.app.get("/is-authenticated/", headers={})
         self.assertEquals(result.status_code, 401)
+
+    def test_should_authenticate_if_token_is_set_as_parameter(self):
+        result = self.app.get("/is-authenticated/?access_token=%s" % self.token)
+        self.assertEquals(result.status_code, 200)
+
 
     def test_should_only_authenticate_if_admin(self):
         result = self.app.get("/is-admin/", headers={})

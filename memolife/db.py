@@ -7,10 +7,7 @@ from mongokit import Connection
 try:
     import simplejson as json
 except ImportError:
-    try:
-        import json
-    except ImportError:
-        raise ImportError
+    import json
 import datetime
 from bson.objectid import ObjectId
 

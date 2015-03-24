@@ -20,7 +20,7 @@ def set_request_user():
     if hasattr(request, 'user'):
         return
 
-    if request.values.has_key('access_token'):
+    if request.values.has_key('access_token'):  # Check for token in request params
         token = request.values['access_token']
     else:
         token = request.headers.get('authorization', '').split("Bearer ")[-1]
@@ -29,7 +29,7 @@ def set_request_user():
         abort(401)
 
     try:
-        payload = jwt.decode(token, key=app.config["CRYPTO_KEY"])
+        payload = jwt.decode(token, key=app.config["SECRET_KEY"])
     except jwt.DecodeError:
         abort(401)
 

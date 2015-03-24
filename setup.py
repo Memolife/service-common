@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(
     name = "memolife",
-    version = "0.1",
+    version = "0.2",
     packages = ['memolife'],
     install_requires = [
         'Flask>=0.10.1',

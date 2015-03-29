@@ -32,6 +32,8 @@ def set_request_user():
         payload = jwt.decode(token, key=app.config["SECRET_KEY"])
     except jwt.DecodeError:
         abort(401)
+    except jwt.ExpiredSignatureError:
+        abort(401)
 
     if payload:
         request.user = payload

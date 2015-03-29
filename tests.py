@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from functools import wraps
+import datetime
 import json
 import logging
 import unittest
@@ -40,10 +41,21 @@ class AuthTestCase(unittest.TestCase):
         result = self.app.get("/is-authenticated/", headers={})
         self.assertEquals(result.status_code, 401)
 
+    def test_should_not_auth_with_expired_token(self):
+        token = create_token({
+                '_id': "testuserid",
+                'email': 'test@test.com',
+                'roles': ['user', 'admin'],
+                'exp': datetime.datetime.now() - datetime.timedelta(days=1)            
+            })
+        bearer_header = "Bearer {0}".format(token)
+        result = self.app.get("/is-authenticated/", headers={'authorization': bearer_header})
+        self.assertEquals(result.status_code, 401)
+
+
     def test_should_authenticate_if_token_is_set_as_parameter(self):
         result = self.app.get("/is-authenticated/?access_token=%s" % self.token)
         self.assertEquals(result.status_code, 200)
-
 
     def test_should_only_authenticate_if_admin(self):
         result = self.app.get("/is-admin/", headers={})
